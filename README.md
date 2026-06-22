@@ -1,6 +1,11 @@
-# 📊 Claude Architecture Studio (CAS)
+<p align="center">
+  <img src="./logo.png" width="200" alt="Claude Architecture Studio (CAS) Logo" />
+</p>
+
+# 📊 CAS (Claude Architecture Studio)
 
 An interactive diagram, flowchart, and architecture designer for Claude.
+
 
 Claude Architecture Studio is a custom Model Context Protocol (MCP) server that empowers Claude to design system architectures, databases, and message flows visually using React Flow. It hosts a real-time updating web editor that displays live changes as Claude edits, and allows the developer to customize node coordinates, texts, and styles from a premium browser UI—synced back to Claude.
 
