@@ -72,8 +72,23 @@ const STARTER_DIAGRAM: DiagramState = {
         description: "Primary relational database",
         themeColor: "orange",
         tables: [
-          { name: "users", columns: ["id (UUID)", "email (text)", "created_at (timestamp)"] },
-          { name: "orders", columns: ["id (UUID)", "user_id (UUID)", "total (decimal)", "status (text)"] }
+          {
+            name: "users",
+            columns: [
+              { name: "id", type: "UUID", isPK: true },
+              { name: "email", type: "text", isPK: false },
+              { name: "created_at", type: "timestamp", isPK: false }
+            ]
+          },
+          {
+            name: "orders",
+            columns: [
+              { name: "id", type: "UUID", isPK: true },
+              { name: "user_id", type: "UUID", isPK: false },
+              { name: "total", type: "decimal", isPK: false },
+              { name: "status", type: "text", isPK: false }
+            ]
+          }
         ]
       }
     }

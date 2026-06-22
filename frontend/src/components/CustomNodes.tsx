@@ -8,7 +8,8 @@ import {
   HardDrive,
   ShieldCheck,
   Cloud,
-  ExternalLink
+  ExternalLink,
+  Key
 } from "lucide-react";
 import { NodeData } from "../types";
 
@@ -127,10 +128,48 @@ export const DatabaseNode = memo(({ data, selected }: NodeProps) => {
                 <div className="table-name">
                   <Database size={10} /> {table.name}
                 </div>
-                <div className="table-columns">
-                  {table.columns.map((col, colIdx) => (
-                    <span key={colIdx}>• {col}</span>
-                  ))}
+                <div className="table-columns" style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                  {table.columns.map((col, colIdx) => {
+                    const isColPK = !!col.isPK;
+                    const colName = col.name;
+                    const colType = col.type || "text";
+
+                    return (
+                      <div
+                        key={colIdx}
+                        className="db-column-row"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "8px",
+                          width: "100%",
+                          lineHeight: "1.2",
+                          padding: "2px 0"
+                        }}
+                      >
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {isColPK && <Key size={9} style={{ color: "#f59e0b", flexShrink: 0 }} />}
+                          <span style={{
+                            fontWeight: isColPK ? 600 : 400,
+                            color: isColPK ? "var(--text-primary)" : "var(--text-secondary)",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis"
+                          }}>
+                            {colName}
+                          </span>
+                        </span>
+                        <span style={{
+                          color: "var(--text-muted)",
+                          fontSize: "8px",
+                          fontStyle: "italic",
+                          flexShrink: 0
+                        }}>
+                          {colType}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}

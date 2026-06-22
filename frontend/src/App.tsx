@@ -25,12 +25,54 @@ const AppContent: React.FC = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
   
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [showMermaidModal, setShowMermaidModal] = useState(false);
   const [mermaidCode, setMermaidCode] = useState("");
 
   const wsRef = useRef<WebSocket | null>(null);
   const isSyncingRef = useRef(false);
+
+  // Normalize incoming db nodes for backwards-compatibility
+  const normalizeDatabaseNodes = (incomingNodes: any[]): any[] => {
+    if (!incomingNodes) return [];
+    return incomingNodes.map((node) => {
+      if (node.type === "database" && node.data?.tables) {
+        const parsedTables = node.data.tables.map((table: any) => {
+          const parsedColumns = (table.columns || []).map((col: any) => {
+            if (col && typeof col === "object" && "name" in col) {
+              return col;
+            }
+            if (typeof col === "string") {
+              const trimmed = col.trim();
+              const match = trimmed.match(/^([a-zA-Z0-9_]+)(?:\s*\(([^)]+)\))?$/i);
+              if (match) {
+                const name = match[1];
+                const type = match[2] || "text";
+                const isPK = name.toLowerCase() === "id";
+                return { name, type, isPK };
+              }
+              return {
+                name: trimmed,
+                type: "text",
+                isPK: trimmed.toLowerCase() === "id"
+              };
+            }
+            return { name: "unknown", type: "text" };
+          });
+          return { ...table, columns: parsedColumns };
+        });
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            tables: parsedTables
+          }
+        };
+      }
+      return node;
+    });
+  };
 
   // Sync edits back to MCP Server
   const syncWithServer = useCallback((updatedNodes: ReactFlowNode[], updatedEdges: ReactFlowEdge[]) => {
@@ -78,7 +120,7 @@ const AppContent: React.FC = () => {
           if (msg.type === "sync_state" && msg.payload) {
             // Only update locally if we did not trigger the sync
             if (!isSyncingRef.current) {
-              setNodes(msg.payload.nodes);
+              setNodes(normalizeDatabaseNodes(msg.payload.nodes));
               setEdges(msg.payload.edges);
             }
           }
@@ -110,9 +152,16 @@ const AppContent: React.FC = () => {
   // Hook into node selection
   const onNodeClick = useCallback((_: any, node: any) => {
     setSelectedNodeId(node.id);
+    setSelectedEdgeId(null);
   }, []);
 
   const onPaneClick = useCallback(() => {
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+  }, []);
+
+  const onEdgeClick = useCallback((_: any, edge: any) => {
+    setSelectedEdgeId(edge.id);
     setSelectedNodeId(null);
   }, []);
 
@@ -123,7 +172,12 @@ const AppContent: React.FC = () => {
         ...params,
         id: `edge-${params.source}-${params.target}`,
         animated: true,
-        type: "smoothstep"
+        type: "smoothstep",
+        className: "edge-color-default edge-speed-medium",
+        data: {
+          speed: "medium",
+          color: "default"
+        }
       };
       setEdges((eds) => {
         const nextEds = addEdge(newEdge, eds);
@@ -190,7 +244,7 @@ const AppContent: React.FC = () => {
         description: `Custom ${type} component description`,
         themeColor: colorMap[type] || "blue",
         endpoints: type === "server" ? [{ method: "GET", path: "/health", description: "Health check" }] : undefined,
-        tables: type === "database" ? [{ name: "users", columns: ["id", "username"] }] : undefined
+        tables: type === "database" ? [{ name: "users", columns: [{ name: "id", type: "UUID", isPK: true }, { name: "username", type: "VARCHAR" }] }] : undefined
       }
     };
 
@@ -233,6 +287,43 @@ const AppContent: React.FC = () => {
     });
     setSelectedNodeId(null);
   }, [setNodes, setEdges, syncWithServer]);
+
+  // Sidebar updates: modify properties of specific edge
+  const handleUpdateEdge = useCallback((id: string, updatedFields: Partial<ReactFlowEdge['data']> & { label?: string, type?: string }) => {
+    setEdges((eds) => {
+      const nextEds = eds.map((edge) => {
+        if (edge.id === id) {
+          const { label, type, ...dataFields } = updatedFields;
+          const nextEdge = { ...edge };
+          if (label !== undefined) nextEdge.label = label;
+          if (type !== undefined) nextEdge.type = type;
+
+          const currentData = edge.data || {};
+          const speed = dataFields.speed !== undefined ? dataFields.speed : (currentData.speed || "medium");
+          const color = dataFields.color !== undefined ? dataFields.color : (currentData.color || "default");
+
+          nextEdge.className = `edge-color-${color} edge-speed-${speed}`;
+          nextEdge.data = { ...currentData, ...dataFields, speed, color };
+          nextEdge.animated = speed !== "none";
+
+          return nextEdge;
+        }
+        return edge;
+      });
+      setTimeout(() => syncWithServer(nodes, nextEds), 0);
+      return nextEds;
+    });
+  }, [nodes, setEdges, syncWithServer]);
+
+  // Sidebar updates: delete specific edge
+  const handleDeleteEdge = useCallback((id: string) => {
+    setEdges((eds) => {
+      const nextEds = eds.filter((e) => e.id !== id);
+      setTimeout(() => syncWithServer(nodes, nextEds), 0);
+      return nextEds;
+    });
+    setSelectedEdgeId(null);
+  }, [nodes, setEdges, syncWithServer]);
 
   // Toolbar Actions: Auto Layout
   const handleAutoLayout = useCallback(() => {
@@ -361,6 +452,7 @@ const AppContent: React.FC = () => {
   };
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) || null;
+  const selectedEdge = edges.find((e) => e.id === selectedEdgeId) || null;
 
   return (
     <div className="studio-layout">
@@ -384,6 +476,7 @@ const AppContent: React.FC = () => {
           onNodeClick={onNodeClick}
           onNodeDragStop={onNodeDragStop}
           onPaneClick={onPaneClick}
+          onEdgeClick={onEdgeClick}
           nodeTypes={nodeTypes}
           fitView
           fitViewOptions={{ padding: 0.15 }}
@@ -399,6 +492,9 @@ const AppContent: React.FC = () => {
         selectedNode={selectedNode}
         onUpdateNode={handleUpdateNode}
         onDeleteNode={handleDeleteNode}
+        selectedEdge={selectedEdge}
+        onUpdateEdge={handleUpdateEdge}
+        onDeleteEdge={handleDeleteEdge}
         onClose={onPaneClick}
       />
 

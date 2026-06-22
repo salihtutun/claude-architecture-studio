@@ -1,11 +1,14 @@
 import React from "react";
-import { Trash2, Plus, Info, X } from "lucide-react";
-import { ReactFlowNode, NodeData } from "../types";
+import { Trash2, Plus, Info, X, Key } from "lucide-react";
+import { ReactFlowNode, NodeData, ReactFlowEdge } from "../types";
 
 interface SidebarProps {
   selectedNode: ReactFlowNode | null;
   onUpdateNode: (id: string, updatedFields: Partial<NodeData> & { type?: string }) => void;
   onDeleteNode: (id: string) => void;
+  selectedEdge?: ReactFlowEdge | null;
+  onUpdateEdge?: (id: string, updatedFields: Partial<ReactFlowEdge['data']> & { label?: string, type?: string }) => void;
+  onDeleteEdge?: (id: string) => void;
   onClose: () => void;
 }
 
@@ -25,23 +28,114 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedNode,
   onUpdateNode,
   onDeleteNode,
+  selectedEdge,
+  onUpdateEdge,
+  onDeleteEdge,
   onClose
 }) => {
   if (!selectedNode) {
+    if (selectedEdge) {
+      const { id, label, type: edgeType, data } = selectedEdge;
+      const speed = data?.speed || "medium";
+      const color = data?.color || "default";
+
+      return (
+        <div className="studio-sidebar">
+          <div className="sidebar-header">
+            <h3 className="sidebar-title">Edit Connection</h3>
+            <button className="icon-btn-delete" onClick={onClose} title="Close Sidebar">
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="sidebar-content">
+            {/* Connection Label */}
+            <div className="sidebar-section">
+              <label className="section-label">Label</label>
+              <input
+                type="text"
+                className="input-text"
+                value={label || ""}
+                onChange={(e) => onUpdateEdge?.(id, { label: e.target.value })}
+                placeholder="e.g. REST, gRPC, SQL"
+              />
+            </div>
+
+            {/* Connection Style / Routing */}
+            <div className="sidebar-section">
+              <label className="section-label">Routing Style</label>
+              <select
+                className="input-select"
+                value={edgeType || "smoothstep"}
+                onChange={(e) => onUpdateEdge?.(id, { type: e.target.value })}
+              >
+                <option value="smoothstep">Smoothstep (Default)</option>
+                <option value="straight">Straight</option>
+                <option value="step">Step</option>
+                <option value="bezier">Bezier Curve</option>
+              </select>
+            </div>
+
+            {/* Connection Speed */}
+            <div className="sidebar-section">
+              <label className="section-label">Animation Speed</label>
+              <select
+                className="input-select"
+                value={speed}
+                onChange={(e) => onUpdateEdge?.(id, { speed: e.target.value as any })}
+              >
+                <option value="none">None (Static Line)</option>
+                <option value="slow">Slow Pulse</option>
+                <option value="medium">Medium Pulse</option>
+                <option value="fast">Fast Pulse</option>
+              </select>
+            </div>
+
+            {/* Connection Theme Color */}
+            <div className="sidebar-section">
+              <label className="section-label">Connection Color</label>
+              <div className="color-picker">
+                {["default", "blue", "green", "purple", "orange", "red", "indigo"].map((c) => (
+                  <div
+                    key={c}
+                    className={`color-tile ${c === "default" ? "color-default-tile" : c} ${color === c ? "selected" : ""}`}
+                    style={{
+                      backgroundColor: c === "default" ? "#475569" : `var(--theme-${c})`,
+                      border: color === c ? "2px solid #fff" : "2px solid transparent"
+                    }}
+                    onClick={() => onUpdateEdge?.(id, { color: c })}
+                    title={c}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="sidebar-footer">
+            <button className="btn-secondary" onClick={() => onDeleteEdge?.(id)}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <Trash2 size={16} /> Disconnect Paths
+              </div>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="studio-sidebar">
         <div className="sidebar-empty-state">
           <Info size={40} />
           <h3 style={{ fontFamily: "'Outfit', sans-serif" }}>Claude Architecture Studio</h3>
           <p>
-            Select any node on the canvas to customize its labels, descriptions, schema fields, endpoints, and themes.
+            Select any node or connection path on the canvas to customize labels, descriptions, schemas, routing, and speeds.
           </p>
           <div style={{ marginTop: "20px", fontSize: "11px", color: "var(--text-muted)", textAlign: "left", width: "100%" }}>
             <strong style={{ color: "var(--text-secondary)" }}>Canvas Controls:</strong>
             <ul style={{ paddingLeft: "15px", marginTop: "5px", lineHeight: "1.6" }}>
               <li>Drag nodes to position</li>
               <li>Drag handles to connect</li>
-              <li>Click edges to select & delete</li>
+              <li>Click edges to select & style</li>
               <li>Double-click nodes for editing</li>
             </ul>
           </div>
@@ -93,17 +187,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const tables = data.tables || [];
 
   const handleAddTable = () => {
-    const newTables = [...tables, { name: "new_table", columns: ["id (INT)", "name (VARCHAR)"] }];
+    const newTables = [...tables, { name: "new_table", columns: [{ name: "id", type: "UUID", isPK: true }] }];
     onUpdateNode(id, { tables: newTables });
   };
 
-  const handleUpdateTable = (idx: number, field: "name" | "columnsString", val: string) => {
+  const handleUpdateTable = (tableIdx: number, newName: string) => {
     const newTables = tables.map((t, i) => {
-      if (i === idx) {
-        if (field === "columnsString") {
-          return { ...t, columns: val.split(",").map(c => c.trim()).filter(Boolean) };
-        }
-        return { ...t, [field]: val };
+      if (i === tableIdx) {
+        return { ...t, name: newName };
       }
       return t;
     });
@@ -112,6 +203,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleDeleteTable = (idx: number) => {
     const newTables = tables.filter((_, i) => i !== idx);
+    onUpdateNode(id, { tables: newTables });
+  };
+
+  const handleAddColumn = (tableIdx: number) => {
+    const newTables = tables.map((t, i) => {
+      if (i === tableIdx) {
+        const columns = t.columns || [];
+        return {
+          ...t,
+          columns: [...columns, { name: "new_column", type: "VARCHAR", isPK: false }]
+        };
+      }
+      return t;
+    });
+    onUpdateNode(id, { tables: newTables });
+  };
+
+  const handleUpdateColumn = (tableIdx: number, colIdx: number, field: "name" | "type" | "isPK", val: any) => {
+    const newTables = tables.map((t, i) => {
+      if (i === tableIdx) {
+        const columns = t.columns.map((c, j) => {
+          if (j === colIdx) {
+            return { ...c, [field]: val };
+          }
+          return c;
+        });
+        return { ...t, columns };
+      }
+      return t;
+    });
+    onUpdateNode(id, { tables: newTables });
+  };
+
+  const handleDeleteColumn = (tableIdx: number, colIdx: number) => {
+    const newTables = tables.map((t, i) => {
+      if (i === tableIdx) {
+        return { ...t, columns: t.columns.filter((_, j) => j !== colIdx) };
+      }
+      return t;
+    });
     onUpdateNode(id, { tables: newTables });
   };
 
@@ -224,16 +355,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {type === "database" && (
           <div className="sidebar-section">
             <label className="section-label">Database Schema</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {tables.map((table, idx) => (
-                <div key={idx} className="sub-editor-item" style={{ flexDirection: "column", alignItems: "stretch", gap: "6px" }}>
+                <div key={idx} className="sub-editor-item" style={{ flexDirection: "column", alignItems: "stretch", gap: "8px", background: "rgba(0,0,0,0.25)", padding: "10px", borderRadius: "8px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     <input
                       type="text"
                       className="input-text"
                       style={{ fontWeight: 600 }}
                       value={table.name}
-                      onChange={(e) => handleUpdateTable(idx, "name", e.target.value)}
+                      onChange={(e) => handleUpdateTable(idx, e.target.value)}
                       placeholder="Table Name"
                     />
                     <button
@@ -244,16 +375,61 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <Trash2 size={14} />
                     </button>
                   </div>
-                  <input
-                    type="text"
-                    className="input-text"
-                    value={table.columns.join(", ")}
-                    onChange={(e) => handleUpdateTable(idx, "columnsString", e.target.value)}
-                    placeholder="id (PK), name, email"
-                  />
-                  <span style={{ fontSize: "9px", color: "var(--text-muted)", paddingLeft: "4px" }}>
-                    Enter fields, separated by commas.
-                  </span>
+                  
+                  {/* Columns List */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
+                    <label className="section-label" style={{ fontSize: "9px" }}>Columns</label>
+                    {table.columns.map((col, colIdx) => (
+                      <div key={colIdx} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <input
+                          type="text"
+                          className="input-text"
+                          style={{ flex: 1, padding: "4px 6px", fontSize: "11px" }}
+                          value={col.name}
+                          onChange={(e) => handleUpdateColumn(idx, colIdx, "name", e.target.value)}
+                          placeholder="name"
+                        />
+                        <input
+                          type="text"
+                          className="input-text"
+                          style={{ width: "80px", padding: "4px 6px", fontSize: "11px" }}
+                          value={col.type}
+                          onChange={(e) => handleUpdateColumn(idx, colIdx, "type", e.target.value)}
+                          placeholder="type"
+                        />
+                        <button
+                          type="button"
+                          className="icon-btn-delete"
+                          style={{
+                            padding: "6px",
+                            background: col.isPK ? "rgba(245, 158, 11, 0.15)" : "transparent",
+                            color: col.isPK ? "#f59e0b" : "var(--text-muted)",
+                            border: col.isPK ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid transparent",
+                            borderRadius: "4px"
+                          }}
+                          onClick={() => handleUpdateColumn(idx, colIdx, "isPK", !col.isPK)}
+                          title={col.isPK ? "Primary Key" : "Toggle Primary Key"}
+                        >
+                          <Key size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          className="icon-btn-delete"
+                          onClick={() => handleDeleteColumn(idx, colIdx)}
+                          title="Delete column"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      className="sub-btn-add"
+                      style={{ padding: "4px 8px", fontSize: "10px", marginTop: "4px" }}
+                      onClick={() => handleAddColumn(idx)}
+                    >
+                      <Plus size={10} /> Add Column
+                    </button>
+                  </div>
                 </div>
               ))}
               <button className="sub-btn-add" onClick={handleAddTable}>

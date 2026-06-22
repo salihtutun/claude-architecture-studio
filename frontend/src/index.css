@@ -717,3 +717,60 @@ body, html, #root {
   justify-content: flex-end;
   gap: 10px;
 }
+
+/* Custom Edge Animation Speeds */
+.react-flow__edge.edge-speed-slow .react-flow__edge-path {
+  stroke-dasharray: 6;
+  animation: dash 3.5s linear infinite !important;
+}
+
+.react-flow__edge.edge-speed-medium .react-flow__edge-path {
+  stroke-dasharray: 6;
+  animation: dash 1.5s linear infinite !important;
+}
+
+.react-flow__edge.edge-speed-fast .react-flow__edge-path {
+  stroke-dasharray: 6;
+  animation: dash 0.4s linear infinite !important;
+}
+
+.react-flow__edge.edge-speed-none .react-flow__edge-path {
+  animation: none !important;
+  stroke-dasharray: none !important;
+}
+
+/* Custom Edge Themes */
+.react-flow__edge.edge-color-blue .react-flow__edge-path { stroke: var(--theme-blue) !important; }
+.react-flow__edge.edge-color-green .react-flow__edge-path { stroke: var(--theme-green) !important; }
+.react-flow__edge.edge-color-purple .react-flow__edge-path { stroke: var(--theme-purple) !important; }
+.react-flow__edge.edge-color-orange .react-flow__edge-path { stroke: var(--theme-orange) !important; }
+.react-flow__edge.edge-color-red .react-flow__edge-path { stroke: var(--theme-red) !important; }
+.react-flow__edge.edge-color-indigo .react-flow__edge-path { stroke: var(--theme-indigo) !important; }
+.react-flow__edge.edge-color-default .react-flow__edge-path { stroke: rgba(255, 255, 255, 0.2) !important; }
+
+/* Custom Selected Edge Highlights */
+.react-flow__edge.selected.edge-color-blue .react-flow__edge-path { stroke-width: 3.5px !important; stroke: var(--theme-blue) !important; filter: drop-shadow(0 0 4px var(--theme-blue)); }
+.react-flow__edge.selected.edge-color-green .react-flow__edge-path { stroke-width: 3.5px !important; stroke: var(--theme-green) !important; filter: drop-shadow(0 0 4px var(--theme-green)); }
+.react-flow__edge.selected.edge-color-purple .react-flow__edge-path { stroke-width: 3.5px !important; stroke: var(--theme-purple) !important; filter: drop-shadow(0 0 4px var(--theme-purple)); }
+.react-flow__edge.selected.edge-color-orange .react-flow__edge-path { stroke-width: 3.5px !important; stroke: var(--theme-orange) !important; filter: drop-shadow(0 0 4px var(--theme-orange)); }
+.react-flow__edge.selected.edge-color-red .react-flow__edge-path { stroke-width: 3.5px !important; stroke: var(--theme-red) !important; filter: drop-shadow(0 0 4px var(--theme-red)); }
+.react-flow__edge.selected.edge-color-indigo .react-flow__edge-path { stroke-width: 3.5px !important; stroke: var(--theme-indigo) !important; filter: drop-shadow(0 0 4px var(--theme-indigo)); }
+.react-flow__edge.selected.edge-color-default .react-flow__edge-path { stroke-width: 3.5px !important; stroke: var(--theme-blue) !important; filter: drop-shadow(0 0 4px var(--theme-blue)); }
+
+/* Edge color tile styling for connection builder */
+.color-tile.color-default-tile {
+  background-color: #475569 !important;
+}
+
+/* Glowing selection effect for Node Card types */
+.custom-node.selected.color-blue { box-shadow: 0 0 20px 4px rgba(56, 189, 248, 0.35) !important; }
+.custom-node.selected.color-green { box-shadow: 0 0 20px 4px rgba(52, 211, 153, 0.35) !important; }
+.custom-node.selected.color-purple { box-shadow: 0 0 20px 4px rgba(192, 132, 252, 0.35) !important; }
+.custom-node.selected.color-orange { box-shadow: 0 0 20px 4px rgba(251, 146, 60, 0.35) !important; }
+.custom-node.selected.color-red { box-shadow: 0 0 20px 4px rgba(248, 113, 113, 0.35) !important; }
+.custom-node.selected.color-indigo { box-shadow: 0 0 20px 4px rgba(129, 140, 248, 0.35) !important; }
+
+/* Custom database key icon in table name */
+.table-name svg {
+  color: var(--theme-orange);
+}

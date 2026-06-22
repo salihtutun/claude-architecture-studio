@@ -3,12 +3,18 @@ export interface Position {
   y: number;
 }
 
+export interface TableColumn {
+  name: string;
+  type: string;
+  isPK?: boolean;
+}
+
 export interface NodeData {
   label: string;
   description?: string;
   // Type-specific properties
   endpoints?: Array<{ method: string; path: string; description?: string }>;
-  tables?: Array<{ name: string; columns: string[] }>;
+  tables?: Array<{ name: string; columns: TableColumn[] }>;
   iconName?: string;
   // Styling
   themeColor?: string; // e.g. "blue", "green", "purple", "orange", "red", "indigo"
@@ -32,6 +38,11 @@ export interface ReactFlowEdge {
   animated?: boolean;
   type?: string; // e.g. "smoothstep", "straight", "step", "bezier"
   style?: Record<string, string | number>;
+  className?: string;
+  data?: {
+    speed?: 'none' | 'slow' | 'medium' | 'fast';
+    color?: string; // "blue", "green", "purple", "orange", "red", "indigo", "default"
+  };
 }
 
 export interface DiagramState {
