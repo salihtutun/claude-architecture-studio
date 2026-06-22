@@ -74,7 +74,7 @@ Add the MCP configuration block to your Claude Desktop configuration file:
     "claude-architecture-studio": {
       "command": "node",
       "args": [
-        "/Users/salihtutun/Downloads/CAS/server/dist/index.js"
+        "/path/to/claude-architecture-studio/server/dist/index.js"
       ]
     }
   }
