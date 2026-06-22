@@ -1,0 +1,13 @@
+# Dependency directories
+node_modules/
+
+# Production build artifacts
+dist/
+/server/dist/
+/frontend/dist/
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+/cas-diagram.json
