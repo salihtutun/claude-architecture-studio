@@ -119,7 +119,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <button className="toolbar-btn" onClick={onExportPNG} title="Export to PNG Image">
           <Download size={16} />
         </button>
-        <button className="toolbar-btn" onClick={onCopyMermaid} title="Copy Mermaid Diagram Code">
+        <button className="toolbar-btn" onClick={onCopyMermaid} title="Export Mermaid, SQL, or TS Code">
           <Share2 size={16} />
         </button>
       </div>

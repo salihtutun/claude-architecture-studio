@@ -139,6 +139,7 @@ export const DatabaseNode = memo(({ data, selected }: NodeProps) => {
                         key={colIdx}
                         className="db-column-row"
                         style={{
+                          position: "relative",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
@@ -148,6 +149,24 @@ export const DatabaseNode = memo(({ data, selected }: NodeProps) => {
                           padding: "2px 0"
                         }}
                       >
+                        {/* Column Input Handle */}
+                        <Handle
+                          type="target"
+                          position={Position.Left}
+                          id={`col-${table.name}-${colName}-in`}
+                          className="db-column-handle target"
+                          style={{
+                            left: "-20px",
+                            background: "var(--theme-orange)",
+                            borderColor: "var(--bg-secondary)",
+                            width: "6px",
+                            height: "6px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            zIndex: 10
+                          }}
+                        />
+
                         <span style={{ display: "flex", alignItems: "center", gap: "4px", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {isColPK && <Key size={9} style={{ color: "#f59e0b", flexShrink: 0 }} />}
                           <span style={{
@@ -167,6 +186,24 @@ export const DatabaseNode = memo(({ data, selected }: NodeProps) => {
                         }}>
                           {colType}
                         </span>
+
+                        {/* Column Output Handle */}
+                        <Handle
+                          type="source"
+                          position={Position.Right}
+                          id={`col-${table.name}-${colName}-out`}
+                          className="db-column-handle source"
+                          style={{
+                            right: "-20px",
+                            background: "var(--theme-orange)",
+                            borderColor: "var(--bg-secondary)",
+                            width: "6px",
+                            height: "6px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            zIndex: 10
+                          }}
+                        />
                       </div>
                     );
                   })}

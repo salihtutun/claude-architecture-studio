@@ -32,6 +32,8 @@ export interface ReactFlowEdge {
   id: string;
   source: string;
   target: string;
+  sourceHandle?: string | null;
+  targetHandle?: string | null;
   label?: string;
   animated?: boolean;
   type?: string;
@@ -40,6 +42,9 @@ export interface ReactFlowEdge {
   data?: {
     speed?: 'none' | 'slow' | 'medium' | 'fast';
     color?: string; // "blue", "green", "purple", "orange", "red", "indigo", "default"
+    protocol?: string;
+    requestSchema?: string;
+    responseSchema?: string;
   };
 }
 

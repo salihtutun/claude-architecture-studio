@@ -774,3 +774,39 @@ body, html, #root {
 .table-name svg {
   color: var(--theme-orange);
 }
+
+/* Database column relationship handles */
+.react-flow__handle.db-column-handle {
+  border-radius: 50% !important;
+  width: 6px !important;
+  height: 6px !important;
+  border: 1.5px solid var(--bg-secondary) !important;
+  background-color: var(--theme-orange) !important;
+  box-shadow: 0 0 4px rgba(251, 146, 60, 0.5);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.react-flow__handle.db-column-handle:hover {
+  width: 10px !important;
+  height: 10px !important;
+  background-color: #fff !important;
+  box-shadow: 0 0 8px var(--theme-orange) !important;
+  cursor: crosshair;
+}
+
+.react-flow__handle.db-column-handle.target {
+  margin-left: 2px;
+}
+
+.react-flow__handle.db-column-handle.source {
+  margin-right: 2px;
+}
+
+/* Export Modal Tab buttons hover states */
+.export-tabs button:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.export-tabs button:active {
+  transform: scale(0.98);
+}

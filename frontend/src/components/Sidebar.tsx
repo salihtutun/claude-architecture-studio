@@ -109,6 +109,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* Connection Protocol */}
+            <div className="sidebar-section">
+              <label className="section-label">Protocol / Method</label>
+              <input
+                type="text"
+                className="input-text"
+                value={data?.protocol || ""}
+                onChange={(e) => onUpdateEdge?.(id, { protocol: e.target.value })}
+                placeholder="e.g. HTTP GET, gRPC, Pub/Sub"
+              />
+            </div>
+
+            {/* Request Schema */}
+            <div className="sidebar-section">
+              <label className="section-label">Request Payload (JSON)</label>
+              <textarea
+                className="input-textarea"
+                style={{ fontFamily: "'Fira Code', monospace", fontSize: "11px", minHeight: "80px" }}
+                value={data?.requestSchema || ""}
+                onChange={(e) => onUpdateEdge?.(id, { requestSchema: e.target.value })}
+                placeholder='e.g. { "id": "123" }'
+              />
+            </div>
+
+            {/* Response Schema */}
+            <div className="sidebar-section">
+              <label className="section-label">Response Payload (JSON)</label>
+              <textarea
+                className="input-textarea"
+                style={{ fontFamily: "'Fira Code', monospace", fontSize: "11px", minHeight: "80px" }}
+                value={data?.responseSchema || ""}
+                onChange={(e) => onUpdateEdge?.(id, { responseSchema: e.target.value })}
+                placeholder='e.g. { "status": "success" }'
+              />
+            </div>
           </div>
 
           <div className="sidebar-footer">
